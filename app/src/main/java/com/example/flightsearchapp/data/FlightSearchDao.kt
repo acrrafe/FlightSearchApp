@@ -20,8 +20,8 @@ interface FlightSearchDao {
     @Query("SELECT * FROM favorite")
     fun getAllFavorites(): Flow<List<Favorite>>
 
-    @Query("SELECT * FROM airport")
-    fun getAllQueries(): Flow<List<Airport>>
+    @Query("SELECT * FROM airport WHERE iata_code LIKE :query")
+    fun getAllQueries(query: String): Flow<List<AirportWithFavorites>>
 
     @Query("SELECT * FROM airport")
     fun getAutoSuggestions(): Flow<List<Airport>>
