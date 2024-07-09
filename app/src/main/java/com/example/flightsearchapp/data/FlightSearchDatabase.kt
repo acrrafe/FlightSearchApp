@@ -6,6 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.flightsearchapp.data.relations.FlightSearchAirportEntity
+import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
+import com.example.flightsearchapp.data.relations.PotentialFlightEntity
 
 @Database(entities = [
     FlightSearchAirportEntity::class,

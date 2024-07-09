@@ -1,8 +1,9 @@
 package com.example.flightsearchapp.ui.screen
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,19 +20,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.flightsearchapp.data.AirportWithFavorites
+import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlightSearchAppBody(
     modifier: Modifier = Modifier,
-    viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.factory)
+    viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.factory),
 ){
-    var text by rememberSaveable { mutableStateOf("") }
-    var active by rememberSaveable { mutableStateOf(false)  }
     val data = viewModel.flightUiState.collectAsState()
-    val sample = viewModel.getAllAirport().collectAsState()
-    var list = mutableListOf<AirportWithFavorites>()
+    var list = mutableListOf<AirportWithPotentialFlights>()
 
     Column(
         modifier = modifier,
@@ -52,12 +50,23 @@ fun FlightSearchAppBody(
         ) {
             // Queries Feedback Section
 
-             Column {
-                 Text("Queries Feedback:", fontWeight = FontWeight.Bold)
-                 data.value.queriesFeedback.forEach { feedback ->
-                     list.add(feedback)
+             LazyColumn {
+                item {
+                    Text("Queries Feedback:", fontWeight = FontWeight.Bold)
+                }
+                 item {
+                     data.value.queriesFeedback.forEach { feedback ->
+                         list.add(feedback)
+                     }
                  }
-                 Text("Size of queries: ${data.value.queriesFeedback.size}")
+                 item{
+                  if(data.value.queriesFeedback.isEmpty()){
+                     Text("Size of queries: ${data.value.queriesFeedback.size}")
+                 }else{
+                     Text("Size of queries: ${data.value.queriesFeedback[0]}")
+                 }
+
+                 }
              }
 
 

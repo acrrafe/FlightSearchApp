@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.flightsearchapp.FlightSearchApplication
-import com.example.flightsearchapp.data.AirportWithFavorites
+import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.FlightSearchRepository
 import com.example.flightsearchapp.model.Airport
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,13 +28,11 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
             it.copy(userQuery = userQuery)
         }
     }
-
     fun updateSearchStatus() {
         _flightUiState.update {
             it.copy(active = !flightUiState.value.active)
         }
     }
-
     fun getFlight(){
         viewModelScope.launch {
             flightSearchRepository.getAllFlightSearchStream(flightUiState.value.userQuery)
@@ -48,17 +46,6 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
         }
     }
-
-    init {
-        getAllAirport()
-    }
-    fun getAllAirport(): StateFlow<List<Airport>> =
-        flightSearchRepository.getAllFlightSearchStream2().map { it }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000L),
-                initialValue = listOf()
-            )
 
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
@@ -75,5 +62,5 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 data class FlightUiState(
     val userQuery: String = "",
     val active: Boolean = false,
-    val queriesFeedback: List<AirportWithFavorites> = emptyList()
+    val queriesFeedback: List<AirportWithPotentialFlights> = emptyList()
 )

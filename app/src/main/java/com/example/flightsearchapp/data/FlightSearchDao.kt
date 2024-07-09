@@ -1,9 +1,9 @@
 package com.example.flightsearchapp.data
 
 import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
+import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.model.Airport
 import com.example.flightsearchapp.model.Favorite
 import kotlinx.coroutines.flow.Flow
@@ -17,12 +17,15 @@ interface FlightSearchDao {
 //    @Delete
 //    suspend fun deleteFavorite()
 
+    @Transaction
     @Query("SELECT * FROM favorite")
     fun getAllFavorites(): Flow<List<Favorite>>
 
-    @Query("SELECT * FROM airport WHERE iata_code LIKE :query")
-    fun getAllQueries(query: String): Flow<List<AirportWithFavorites>>
+    @Transaction
+    @Query("SELECT * FROM airport WHERE name LIKE '%' || :query || '%' OR iata_code LIKE :query")
+    fun getAllQueries(query: String): Flow<List<AirportWithPotentialFlights>>
 
+    @Transaction
     @Query("SELECT * FROM airport")
     fun getAutoSuggestions(): Flow<List<Airport>>
 }
