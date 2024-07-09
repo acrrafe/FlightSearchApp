@@ -39,40 +39,38 @@ fun FlightSearchAppBody(
             query = data.value.userQuery,
             onQueryChange = viewModel::updateUserQuery,
             onSearch = {
-                data.value.active
                 viewModel.getFlight()
+                viewModel.updateSearchStatus()
                        },
             active = data.value.active,
-            onActiveChange = {viewModel.updateSearchStatus()},
+            onActiveChange = {
+                viewModel.updateSearchStatus()
+                             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search Icon" )
             }
         ) {
-            // Queries Feedback Section
-
-             LazyColumn {
-                item {
-                    Text("Queries Feedback:", fontWeight = FontWeight.Bold)
-                }
-                 item {
-                     data.value.queriesFeedback.forEach { feedback ->
-                         list.add(feedback)
-                     }
-                 }
-                 item{
-                  if(data.value.queriesFeedback.isEmpty()){
-                     Text("Size of queries: ${data.value.queriesFeedback.size}")
-                 }else{
-                     Text("Size of queries: ${data.value.queriesFeedback[0]}")
-                 }
-
-                 }
-             }
-
+            // TODO: Implement AutoSuggest Using DataSharedPreference
 
         }
+        // TODO: Implement Queries Result Layout
+        LazyColumn {
+            item {
+                Text("Queries Feedback:", fontWeight = FontWeight.Bold)
+            }
+            item {
+                data.value.queriesFeedback.forEach { feedback ->
+                    list.add(feedback)
+                }
+            }
+            item{
+                if(data.value.queriesFeedback.isEmpty()){
+                    Text("Size of queries: ${data.value.queriesFeedback.size}")
+                }else{
+                    Text("Size of queries: ${data.value.queriesFeedback[0]}")
+                }
 
-        Text("Size of queries: ${data.value.userQuery}")
-        Text("Size of queries: ${data.value.active}")
+            }
+        }
     }
 }
