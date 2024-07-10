@@ -4,10 +4,15 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 data class AirportWithPotentialFlights(
-    @Embedded val airport: FlightSearchAirportEntity,
+    @Embedded val potentialFlight: PotentialFlightEntity,
     @Relation(
-        parentColumn = "iata_code",
-        entityColumn = "departure_code"
+        parentColumn = "departure_code",
+        entityColumn = "iata_code"
     )
-    val departuresAndDestination: List<PotentialFlightEntity>,
+    val departureAirport: FlightSearchAirportEntity,
+    @Relation(
+        parentColumn = "destination_code",
+        entityColumn = "iata_code"
+    )
+    val destinationAirport: FlightSearchAirportEntity
 )
