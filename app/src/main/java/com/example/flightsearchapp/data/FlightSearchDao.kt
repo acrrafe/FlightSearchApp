@@ -1,9 +1,11 @@
 package com.example.flightsearchapp.data
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
+import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
 import com.example.flightsearchapp.data.relations.PotentialFlightEntity
 
 import com.example.flightsearchapp.model.Airport
@@ -13,8 +15,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FlightSearchDao {
 
-//    @Insert
-//    suspend fun addToFavorite()
+    @Insert
+    suspend fun addToFavorite(favorite: FlightSearchFavoriteEntity)
 
 //    @Delete
 //    suspend fun deleteFavorite()

@@ -22,6 +22,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flightsearchapp.R
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +43,7 @@ fun FlightSearchAppBody(
     modifier: Modifier = Modifier,
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.factory),
 ){
+    val coroutineScope = rememberCoroutineScope()
     val data = viewModel.flightUiState.collectAsState()
     var list = mutableListOf<AirportWithPotentialFlights>()
 
@@ -77,19 +80,19 @@ fun FlightSearchAppBody(
             }
             item {
                 data.value.queriesFeedback.forEach { feedback ->
-                    SearchResultCard(airportWithPotentialFlights = feedback, onItemClick = {})
+                    SearchResultCard(
+                        airportWithPotentialFlights = feedback,
+                        onItemClick = {
+                            coroutineScope.launch {
+                                viewModel.addToFavorite(
+                                    feedback.departureAirport.iataCode,
+                                    feedback.destinationAirport.iataCode)
+                            }
+                        })
                     Log.d("MAINACT",feedback.toString())
                     Log.d("MAINACTSIZE",data.value.queriesFeedback.size.toString())
                 }
             }
-//            item{
-//                if(data.value.queriesFeedback.isEmpty()){
-//                    Text("Size of queries: ${data.value.queriesFeedback.size}")
-//                }else{
-//                    Text("Size of queries: ${data.value.queriesFeedback[0]}")
-//                }
-
-//            }
         }
     }
 }
@@ -99,7 +102,7 @@ fun FlightSearchAppBody(
 fun SearchResultCard(
     modifier: Modifier = Modifier,
     airportWithPotentialFlights: AirportWithPotentialFlights,
-    onItemClick: (AirportWithPotentialFlights) -> Unit,
+    onItemClick: () -> Unit,
 ){
     Card(
         modifier = modifier
@@ -107,7 +110,7 @@ fun SearchResultCard(
             .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
         elevation = CardDefaults.cardElevation(dimensionResource(id = R.dimen.card_elevation)),
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius)),
-        onClick = { onItemClick(airportWithPotentialFlights)},
+        onClick = {},
     ){
         Row(
             modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
@@ -134,7 +137,7 @@ fun SearchResultCard(
                 )
 
             }
-            IconButton( onClick = {}) {
+            IconButton( onClick = onItemClick) {
                 Icon(imageVector = Icons.Outlined.Star, contentDescription = "Save",
                     modifier = Modifier.size(48.dp))
             }

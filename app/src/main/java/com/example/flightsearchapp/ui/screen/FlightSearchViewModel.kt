@@ -8,7 +8,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.flightsearchapp.FlightSearchApplication
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.FlightSearchRepository
+import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
 import com.example.flightsearchapp.model.Airport
+import com.example.flightsearchapp.model.Favorite
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,6 +49,11 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
         }
     }
 
+    suspend fun addToFavorite(departureCode : String, destinationCode : String){
+        flightSearchRepository.addToFavorite(
+            favorite = FlightSearchFavoriteEntity(0, departureCode, destinationCode)
+        )
+    }
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -62,5 +69,8 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 data class FlightUiState(
     val userQuery: String = "",
     val active: Boolean = false,
-    val queriesFeedback: List<AirportWithPotentialFlights> = emptyList()
+    val queriesFeedback: List<AirportWithPotentialFlights> = emptyList(),
+    val currentSelected: Int = 0
 )
+
+
