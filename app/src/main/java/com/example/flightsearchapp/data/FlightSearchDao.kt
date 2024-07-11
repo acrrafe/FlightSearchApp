@@ -24,17 +24,23 @@ interface FlightSearchDao {
 
     @Transaction
     @Query("""
-        SELECT * FROM favorite
-          WHERE departure_code IN (SELECT iata_code FROM airport WHERE  iata_code LIKE departure_code)
-           OR destination_code IN (SELECT iata_code FROM airport WHERE iata_code LIKE destination_code)
+       SELECT f.*
+       FROM favorite f
+       JOIN airport a1 ON f.departure_code = a1.iata_code
+       JOIN airport a2 ON f.destination_code = a2.iata_code
+       ORDER BY a1.passengers DESC, a2.passengers DESC
         """)
     fun getAllFavorites(): Flow<List<FavoriteWithAirportAndPotentialFlights>>
 
     @Transaction
     @Query("""
-        SELECT * FROM potential_flights
-        WHERE departure_code IN (SELECT iata_code FROM airport WHERE name LIKE '%' || :query || '%' OR iata_code LIKE '%' || :query || '%')
-           OR destination_code IN (SELECT iata_code FROM airport WHERE name LIKE '%' || :query || '%' OR iata_code LIKE '%' || :query || '%')
+        SELECT p.*
+        FROM potential_flights p
+        JOIN airport a1 ON p.departure_code = a1.iata_code
+        JOIN airport a2 ON p.destination_code = a2.iata_code 
+        WHERE a1.name LIKE '%' || :query || '%' OR a1.iata_code LIKE '%' || :query || '%'
+        OR a2.name LIKE '%' || :query || '%' OR a2.iata_code LIKE '%' || :query || '%'
+        ORDER BY a1.passengers DESC, a2.passengers DESC
     """)
     fun getAllQueries(query: String): Flow<List<AirportWithPotentialFlights>>
 
