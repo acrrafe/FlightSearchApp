@@ -8,12 +8,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.flightsearchapp.FlightSearchApplication
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.FlightSearchRepository
+import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
 import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
-import com.example.flightsearchapp.model.Airport
-import com.example.flightsearchapp.model.Favorite
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -32,15 +33,38 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
     }
     fun updateSearchStatus() {
         _flightUiState.update {
-            it.copy(active = !flightUiState.value.active)
+            it.copy(isSearching = !flightUiState.value.isSearching)
         }
     }
-    fun getFlight(){
+
+//    fun getFavorites(): StateFlow<FlightUiState> =
+//        flightSearchRepository.getAllFavorites()
+//            .filterNotNull()
+//            .map { FlightUiState(favoriteFlights =  it) }
+//            .stateIn(
+//                viewModelScope,
+//                started = SharingStarted.WhileSubscribed(5_000L),
+//                initialValue = FlightUiState()
+//            )
+
+    fun getFavorites() {
+        viewModelScope.launch {
+            flightSearchRepository.getAllFavorites()
+                .collect { favoriteFilteredList ->
+                    _flightUiState.update {
+                        it.copy(favoriteFlights = favoriteFilteredList)
+                    }
+                }
+        }
+    }
+
+
+    fun getPotentialFlights(){
         viewModelScope.launch {
             flightSearchRepository.getAllFlightSearchStream(flightUiState.value.userQuery)
                 .collect {airportFilteredList ->
                     _flightUiState.update {
-                        it.copy(queriesFeedback = airportFilteredList)
+                        it.copy(potentialFlights = airportFilteredList)
 
                     }
 
@@ -54,6 +78,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
             favorite = FlightSearchFavoriteEntity(0, departureCode, destinationCode)
         )
     }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -63,14 +88,19 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
             }
         }
     }
+
+    init {
+        getFavorites()
+    }
 }
 
 
 data class FlightUiState(
     val userQuery: String = "",
-    val active: Boolean = false,
-    val queriesFeedback: List<AirportWithPotentialFlights> = emptyList(),
-    val currentSelected: Int = 0
+    val isSearching: Boolean = false,
+    val potentialFlights: List<AirportWithPotentialFlights> = emptyList(),
+    val favoriteFlights: List<FavoriteWithAirportAndPotentialFlights> = emptyList(),
+    val isFavorite: Boolean = false
 )
 
 

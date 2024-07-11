@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
+import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
 import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
 import com.example.flightsearchapp.data.relations.PotentialFlightEntity
 
@@ -22,8 +23,12 @@ interface FlightSearchDao {
 //    suspend fun deleteFavorite()
 
     @Transaction
-    @Query("SELECT * FROM favorite")
-    fun getAllFavorites(): Flow<List<Favorite>>
+    @Query("""
+        SELECT * FROM favorite
+          WHERE departure_code IN (SELECT iata_code FROM airport WHERE  iata_code LIKE departure_code)
+           OR destination_code IN (SELECT iata_code FROM airport WHERE iata_code LIKE destination_code)
+        """)
+    fun getAllFavorites(): Flow<List<FavoriteWithAirportAndPotentialFlights>>
 
     @Transaction
     @Query("""
