@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -80,13 +81,28 @@ fun FlightSearchAppBody(
                 }
                 item {
                     data.value.potentialFlights.forEach { feedback ->
+
+                        val isFavorite: Boolean = viewModel.isFavoriteFlight(
+                            feedback.departureAirport.iataCode,
+                            feedback.destinationAirport.iataCode
+                        )
                         SearchResultCard(
+                            isFavorite = isFavorite,
                             airportWithPotentialFlights = feedback,
                             onItemClick = {
                                 coroutineScope.launch {
-                                    viewModel.addToFavorite(
-                                        feedback.departureAirport.iataCode,
-                                        feedback.destinationAirport.iataCode)
+                                    if(isFavorite){
+                                        viewModel.deleteFavorite(
+                                            feedback.departureAirport.iataCode,
+                                            feedback.destinationAirport.iataCode
+                                        )
+                                    }else{
+                                        viewModel.addToFavorite(
+                                            feedback.departureAirport.iataCode,
+                                            feedback.destinationAirport.iataCode
+                                        )
+                                    }
+
                                  }
                             })
                     }
@@ -123,6 +139,7 @@ fun FlightSearchAppBody(
 @Composable
 fun SearchResultCard(
     modifier: Modifier = Modifier,
+    isFavorite: Boolean,
     airportWithPotentialFlights: AirportWithPotentialFlights,
     onItemClick: () -> Unit,
 ){
@@ -159,9 +176,12 @@ fun SearchResultCard(
                 )
 
             }
-            IconButton( onClick = onItemClick) {
-                Icon(imageVector = Icons.Outlined.Star, contentDescription = "Save",
-                    modifier = Modifier.size(48.dp))
+            IconButton(onClick = onItemClick) {
+                Icon(imageVector = Icons.Outlined.Star,
+                    contentDescription = "Save",
+                    modifier = Modifier.size(48.dp),
+                    tint = if(isFavorite) Color(0xFFFFD700) else Color.Gray
+                )
             }
         }
     }
@@ -209,8 +229,11 @@ fun FavoriteCard(
 
             }
             IconButton( onClick = onItemClick) {
-                Icon(imageVector = Icons.Outlined.Star, contentDescription = "Save",
-                    modifier = Modifier.size(48.dp))
+                Icon(imageVector = Icons.Outlined.Star,
+                    contentDescription = "Save",
+                    modifier = Modifier.size(48.dp),
+                    tint = Color(0xFFFFD700)
+                )
             }
         }
     }

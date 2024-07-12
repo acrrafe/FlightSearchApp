@@ -1,5 +1,6 @@
 package com.example.flightsearchapp.ui.screen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -69,6 +70,15 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
     suspend fun deleteFavorite(departureCode: String, destinationCode: String){
         flightSearchRepository.deleteFavorite(departureCode, destinationCode)
+    }
+
+    fun isFavoriteFlight(departureCode: String, destinationCode: String): Boolean{
+       return _flightUiState.value.favoriteFlights
+               .any{ favorite ->
+                   favorite.departureFavorite.iataCode == departureCode
+                       && favorite.destinationFavorite.iataCode == destinationCode
+           }
+
     }
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
