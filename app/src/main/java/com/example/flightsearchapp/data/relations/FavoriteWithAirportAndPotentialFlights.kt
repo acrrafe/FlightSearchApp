@@ -9,7 +9,7 @@ data class FavoriteWithAirportAndPotentialFlights(
         parentColumn = "departure_code",
         entityColumn = "iata_code"
     )
-    val departuresFavorite: FlightSearchAirportEntity,
+    val departureFavorite: FlightSearchAirportEntity,
     @Relation(
         parentColumn = "destination_code",
         entityColumn = "iata_code"

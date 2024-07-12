@@ -37,16 +37,6 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
         }
     }
 
-//    fun getFavorites(): StateFlow<FlightUiState> =
-//        flightSearchRepository.getAllFavorites()
-//            .filterNotNull()
-//            .map { FlightUiState(favoriteFlights =  it) }
-//            .stateIn(
-//                viewModelScope,
-//                started = SharingStarted.WhileSubscribed(5_000L),
-//                initialValue = FlightUiState()
-//            )
-
     fun getFavorites() {
         viewModelScope.launch {
             flightSearchRepository.getAllFavorites()
@@ -79,6 +69,9 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
         )
     }
 
+    suspend fun deleteFavorite(departureCode: String, destinationCode: String){
+        flightSearchRepository.deleteFavorite(departureCode, destinationCode)
+    }
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

@@ -1,7 +1,9 @@
 package com.example.flightsearchapp.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
@@ -16,11 +18,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FlightSearchDao {
 
-    @Insert
+
     suspend fun addToFavorite(favorite: FlightSearchFavoriteEntity)
 
-//    @Delete
-//    suspend fun deleteFavorite()
+    @Query("DELETE FROM favorite WHERE departure_code = :departureCode AND destination_code = :destinationCode ")
+    suspend fun deleteFavorite(departureCode: String, destinationCode: String)
 
     @Transaction
     @Query("""

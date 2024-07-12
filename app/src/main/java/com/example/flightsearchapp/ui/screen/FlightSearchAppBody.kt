@@ -72,7 +72,6 @@ fun FlightSearchAppBody(
         LazyColumn (
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
-
             if(data.value.userQuery.isNotEmpty()){
                 item {
                     Text("Flight from ${data.value.userQuery}",
@@ -88,7 +87,7 @@ fun FlightSearchAppBody(
                                     viewModel.addToFavorite(
                                         feedback.departureAirport.iataCode,
                                         feedback.destinationAirport.iataCode)
-                                }
+                                 }
                             })
                     }
                 }
@@ -106,8 +105,8 @@ fun FlightSearchAppBody(
                             favoriteWithAirportAndPotentialFlights = feedback,
                             onItemClick = {
                                 coroutineScope.launch {
-                                    viewModel.addToFavorite(
-                                        feedback.departuresFavorite.iataCode,
+                                    viewModel.deleteFavorite(
+                                        feedback.departureFavorite.iataCode,
                                         feedback.destinationFavorite.iataCode)
                                 }
                             })
@@ -194,9 +193,9 @@ fun FavoriteCard(
                 Text(text = "Depart")
                 Text( buildAnnotatedString {
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
-                        append("${favoriteWithAirportAndPotentialFlights.departuresFavorite.iataCode} ")
+                        append("${favoriteWithAirportAndPotentialFlights.departureFavorite.iataCode} ")
                     }
-                    append(favoriteWithAirportAndPotentialFlights.departuresFavorite.name)
+                    append(favoriteWithAirportAndPotentialFlights.departureFavorite.name)
                 }
                 )
                 Text(text = "Arrive")

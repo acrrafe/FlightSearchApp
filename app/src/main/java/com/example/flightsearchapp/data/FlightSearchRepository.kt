@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 interface FlightSearchRepository {
 
     suspend fun addToFavorite(favorite: FlightSearchFavoriteEntity)
+
+    suspend fun deleteFavorite(departureCode: String, destinationCode: String)
     fun getAllFlightSearchStream(query: String): Flow<List<AirportWithPotentialFlights>>
 
     fun getAllFavorites(): Flow<List<FavoriteWithAirportAndPotentialFlights>>
@@ -20,6 +22,8 @@ interface FlightSearchRepository {
 
 class OfflineFlightSearchRepository(private val dao: FlightSearchDao): FlightSearchRepository {
     override suspend fun addToFavorite(favorite: FlightSearchFavoriteEntity)  = dao.addToFavorite(favorite)
+
+    override suspend fun deleteFavorite(departureCode: String, destinationCode: String) = dao.deleteFavorite(departureCode, destinationCode)
 
     override fun getAllFlightSearchStream(query: String): Flow<List<AirportWithPotentialFlights>> = dao.getAllQueries(query)
 
