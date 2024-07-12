@@ -19,7 +19,17 @@ import kotlinx.coroutines.flow.Flow
 interface FlightSearchDao {
 
 
-    suspend fun addToFavorite(favorite: FlightSearchFavoriteEntity)
+    @Query("""
+        INSERT INTO favorite (departure_code, destination_code)
+        SELECT :departureCode, :destinationCode
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM favorite 
+            WHERE departure_code = :departureCode 
+              AND destination_code = :destinationCode
+        )
+    """)
+    suspend fun addToFavorite(departureCode: String, destinationCode: String)
 
     @Query("DELETE FROM favorite WHERE departure_code = :departureCode AND destination_code = :destinationCode ")
     suspend fun deleteFavorite(departureCode: String, destinationCode: String)

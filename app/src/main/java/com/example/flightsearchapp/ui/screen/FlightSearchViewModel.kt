@@ -64,9 +64,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
     }
 
     suspend fun addToFavorite(departureCode : String, destinationCode : String){
-        flightSearchRepository.addToFavorite(
-            favorite = FlightSearchFavoriteEntity(0, departureCode, destinationCode)
-        )
+        flightSearchRepository.addToFavorite(departureCode, destinationCode)
     }
 
     suspend fun deleteFavorite(departureCode: String, destinationCode: String){
