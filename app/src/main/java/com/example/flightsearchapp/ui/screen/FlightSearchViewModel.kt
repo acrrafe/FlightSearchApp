@@ -11,6 +11,7 @@ import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.FlightSearchRepository
 import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
 import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
+import com.example.flightsearchapp.model.Airport
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +50,30 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
         }
     }
 
+    private fun getSuggestions(){
+        viewModelScope.launch {
+            flightSearchRepository.getSuggestions()
+                .collect{ airportSuggestions ->
+                    _flightUiState.update {
+                        it.copy(suggestedAirports = airportSuggestions)
+                    }
+
+                }
+        }
+    }
+
+    fun getAutoComplete(query: String){
+        viewModelScope.launch {
+            flightSearchRepository.getAutoComplete(query)
+                .collect{ airportSuggestions ->
+                    _flightUiState.update {
+                        it.copy(autoComplete = airportSuggestions)
+                    }
+
+                }
+        }
+    }
+
 
     fun getPotentialFlights(){
         viewModelScope.launch {
@@ -60,7 +85,6 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
                     }
 
                 }
-
         }
     }
 
@@ -78,8 +102,8 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
                    favorite.departureFavorite.iataCode == departureCode
                        && favorite.destinationFavorite.iataCode == destinationCode
            }
-
     }
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -92,13 +116,15 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
     init {
         getFavorites()
+        getSuggestions()
     }
 }
-
 
 data class FlightUiState(
     val userQuery: String = "",
     val isSearching: Boolean = false,
+    val suggestedAirports: List<Airport> = emptyList(),
+    val autoComplete: List<Airport> = emptyList(),
     val potentialFlights: List<AirportWithPotentialFlights> = emptyList(),
     val favoriteFlights: List<FavoriteWithAirportAndPotentialFlights> = emptyList(),
     val isFavorite: Boolean = false
