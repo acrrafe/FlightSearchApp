@@ -12,21 +12,26 @@ import com.example.flightsearchapp.data.FlightSearchRepository
 import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
 import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
 import com.example.flightsearchapp.model.Airport
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 
 class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRepository) : ViewModel() {
 
     private val _flightUiState = MutableStateFlow(FlightUiState())
-    val flightUiState: StateFlow<FlightUiState> = _flightUiState
+    val flightUiState: StateFlow<FlightUiState> = _flightUiState.asStateFlow()
 
     fun updateUserQuery(userQuery: String) {
         _flightUiState.update {
@@ -86,6 +91,13 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
                 }
         }
+    }
+
+    fun getUserQueryAndPotentialFlights(query: String){
+        _flightUiState.update { it.copy(userQuery = query, isSearching = false) }
+        getPotentialFlights()
+        getAutoComplete(query)
+
     }
 
     suspend fun addToFavorite(departureCode : String, destinationCode : String){

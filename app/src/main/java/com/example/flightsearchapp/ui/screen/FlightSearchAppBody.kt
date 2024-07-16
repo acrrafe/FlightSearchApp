@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,9 +49,7 @@ fun FlightSearchAppBody(
     modifier: Modifier = Modifier,
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.factory),
 ){
-    val coroutineScope = rememberCoroutineScope()
     val data = viewModel.flightUiState.collectAsState()
-    var list = mutableListOf<AirportWithPotentialFlights>()
 
     Column(
         modifier = modifier,
@@ -64,8 +63,9 @@ fun FlightSearchAppBody(
                             viewModel.getAutoComplete(it)
             },
             onSearch = {
-                viewModel.getPotentialFlights()
                 viewModel.updateSearchStatus()
+                viewModel.getPotentialFlights()
+
                        },
             active = data.value.isSearching,
             onActiveChange = {
@@ -102,9 +102,7 @@ fun FlightSearchAppBody(
                             },
                                 modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.padding_small)),
                                 onClick = {
-                                    viewModel.updateUserQuery(airport.iata_code)
-                                    viewModel.getPotentialFlights()
-                                    viewModel.updateSearchStatus()
+                                    viewModel.getUserQueryAndPotentialFlights(airport.iata_code)
                                 }
                             )
                         }
@@ -118,9 +116,7 @@ fun FlightSearchAppBody(
                             },
                                 modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.padding_small)),
                                 onClick = {
-                                    viewModel.updateUserQuery(airport.iata_code)
-                                    viewModel.getPotentialFlights()
-                                    viewModel.updateSearchStatus()
+                                    viewModel.getUserQueryAndPotentialFlights(airport.iata_code)
                                 }
                             )
                         }
@@ -129,177 +125,9 @@ fun FlightSearchAppBody(
                 }
             }
         }
-        // TODO: Implement Queries Result Layout
-        LazyColumn (
-            modifier = Modifier.padding(
-                vertical = dimensionResource(id = R.dimen.padding_small),
-                horizontal = dimensionResource(id = R.dimen.padding_medium)
-            ),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            if(data.value.userQuery.isNotEmpty()){
-                item {
-                    Text("Flight from ${data.value.userQuery}",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp))
-                }
-                item {
-                    data.value.potentialFlights.forEach { feedback ->
-
-                        val isFavorite: Boolean = viewModel.isFavoriteFlight(
-                            feedback.departureAirport.iataCode,
-                            feedback.destinationAirport.iataCode
-                        )
-                        SearchResultCard(
-                            isFavorite = isFavorite,
-                            airportWithPotentialFlights = feedback,
-                            onItemClick = {
-                                coroutineScope.launch {
-                                    if(isFavorite){
-                                        viewModel.deleteFavorite(
-                                            feedback.departureAirport.iataCode,
-                                            feedback.destinationAirport.iataCode
-                                        )
-                                    }else{
-                                        viewModel.addToFavorite(
-                                            feedback.departureAirport.iataCode,
-                                            feedback.destinationAirport.iataCode
-                                        )
-                                    }
-
-                                 }
-                            })
-                    }
-                }
-            }else{
-                item {
-                    Text("Favorite routes",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp))
-                }
-                item {
-                    viewModel.getFavorites()
-                    Log.d("MAINACT", data.value.favoriteFlights.toString())
-                    data.value.favoriteFlights.forEach { feedback ->
-                        FavoriteCard(
-                            favoriteWithAirportAndPotentialFlights = feedback,
-                            onItemClick = {
-                                coroutineScope.launch {
-                                    viewModel.deleteFavorite(
-                                        feedback.departureFavorite.iataCode,
-                                        feedback.destinationFavorite.iataCode)
-                                }
-                            })
-
-                    }
-                }
-            }
-
-        }
+        FlightSearchList(
+            modifier = Modifier.fillMaxSize(),
+            flightUiState = data.value
+        )
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchResultCard(
-    modifier: Modifier = Modifier,
-    isFavorite: Boolean,
-    airportWithPotentialFlights: AirportWithPotentialFlights,
-    onItemClick: () -> Unit,
-){
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
-        elevation = CardDefaults.cardElevation(dimensionResource(id = R.dimen.card_elevation)),
-        shape = RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius)),
-        onClick = {},
-    ){
-        Row(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ){
-            Column (modifier = Modifier
-                .weight(1f)){
-                Text(text = "Depart")
-                Text( buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
-                        append("${airportWithPotentialFlights.departureAirport.iataCode} ")
-                    }
-                    append(airportWithPotentialFlights.departureAirport.name)
-                  }
-                )
-                Text(text = "Arrive")
-                Text(buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
-                        append("${airportWithPotentialFlights.destinationAirport.iataCode} ")
-                    }
-                    append(airportWithPotentialFlights.destinationAirport.name)
-                }
-                )
-
-            }
-            IconButton(onClick = onItemClick) {
-                Icon(imageVector = Icons.Outlined.Star,
-                    contentDescription = "Save",
-                    modifier = Modifier.size(48.dp),
-                    tint = if(isFavorite) Color(0xFFFFD700) else Color.Gray
-                )
-            }
-        }
-    }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FavoriteCard(
-    modifier: Modifier = Modifier,
-    favoriteWithAirportAndPotentialFlights: FavoriteWithAirportAndPotentialFlights,
-    onItemClick: () -> Unit,
-){
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
-        elevation = CardDefaults.cardElevation(dimensionResource(id = R.dimen.card_elevation)),
-        shape = RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius)),
-        onClick = {},
-    ){
-        Row(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ){
-            Column (modifier = Modifier
-                .weight(1f)){
-                Text(text = "Depart")
-                Text( buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
-                        append("${favoriteWithAirportAndPotentialFlights.departureFavorite.iataCode} ")
-                    }
-                    append(favoriteWithAirportAndPotentialFlights.departureFavorite.name)
-                }
-                )
-                Text(text = "Arrive")
-                Text(buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)){
-                        append("${favoriteWithAirportAndPotentialFlights.destinationFavorite.iataCode} ")
-                    }
-                    append(favoriteWithAirportAndPotentialFlights.destinationFavorite.name)
-                }
-                )
-
-            }
-            IconButton( onClick = onItemClick) {
-                Icon(imageVector = Icons.Outlined.Star,
-                    contentDescription = "Save",
-                    modifier = Modifier.size(48.dp),
-                    tint = Color(0xFFFFD700)
-                )
-            }
-        }
-    }
-
 }
