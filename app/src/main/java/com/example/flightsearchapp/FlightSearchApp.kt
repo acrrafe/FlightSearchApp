@@ -20,12 +20,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-
-
 import com.example.flightsearchapp.ui.screen.FlightSearchAppBody
-import com.example.flightsearchapp.ui.screen.FlightSearchViewModel
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

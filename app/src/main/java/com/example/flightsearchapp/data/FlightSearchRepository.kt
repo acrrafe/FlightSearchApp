@@ -2,7 +2,7 @@ package com.example.flightsearchapp.data
 
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
-import com.example.flightsearchapp.model.Airport
+import com.example.flightsearchapp.data.relations.FlightSearchAirportEntity
 import kotlinx.coroutines.flow.Flow
 
 interface FlightSearchRepository {
@@ -14,8 +14,8 @@ interface FlightSearchRepository {
 
     fun getAllFavorites(): Flow<List<FavoriteWithAirportAndPotentialFlights>>
 
-    fun getSuggestions(): Flow<List<Airport>>
-    fun getAutoComplete(query: String): Flow<List<Airport>>
+    fun getSuggestions(): Flow<List<FlightSearchAirportEntity>>
+    fun getAutoComplete(query: String): Flow<List<FlightSearchAirportEntity>>
 }
 
 
@@ -28,8 +28,8 @@ class OfflineFlightSearchRepository(private val dao: FlightSearchDao): FlightSea
 
     override fun getAllFavorites(): Flow<List<FavoriteWithAirportAndPotentialFlights>> = dao.getAllFavorites()
 
-    override fun getSuggestions(): Flow<List<Airport>> = dao.getSuggestions()
+    override fun getSuggestions(): Flow<List<FlightSearchAirportEntity>> = dao.getSuggestions()
 
-    override fun getAutoComplete(query: String): Flow<List<Airport>> = dao.getAutoComplete(query)
+    override fun getAutoComplete(query: String): Flow<List<FlightSearchAirportEntity>> = dao.getAutoComplete(query)
 
 }

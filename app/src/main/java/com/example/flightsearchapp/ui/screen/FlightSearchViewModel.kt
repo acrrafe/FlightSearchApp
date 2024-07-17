@@ -1,6 +1,5 @@
 package com.example.flightsearchapp.ui.screen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,22 +9,12 @@ import com.example.flightsearchapp.FlightSearchApplication
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.FlightSearchRepository
 import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
-import com.example.flightsearchapp.data.relations.FlightSearchFavoriteEntity
-import com.example.flightsearchapp.model.Airport
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import com.example.flightsearchapp.data.relations.FlightSearchAirportEntity
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 
 class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRepository) : ViewModel() {
@@ -33,17 +22,9 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
     private val _flightUiState = MutableStateFlow(FlightUiState())
     val flightUiState: StateFlow<FlightUiState> = _flightUiState.asStateFlow()
 
-    fun updateUserQuery(userQuery: String) {
-        _flightUiState.update {
-            it.copy(userQuery = userQuery)
-        }
-    }
-    fun updateSearchStatus() {
-        _flightUiState.update {
-            it.copy(isSearching = !flightUiState.value.isSearching)
-        }
-    }
-
+    /**
+     * Get the favorite list of flights of the user
+     */
     fun getFavorites() {
         viewModelScope.launch {
             flightSearchRepository.getAllFavorites()
@@ -55,7 +36,22 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
         }
     }
 
-    private fun getSuggestions(){
+    /**
+     * List of Functions for Search Bar
+     */
+    fun updateUserQuery(userQuery: String) {
+        _flightUiState.update {
+            it.copy(userQuery = userQuery)
+        }
+    }
+    // This function is called  to track the state of our SearchBar
+    fun updateSearchStatus() {
+        _flightUiState.update {
+            it.copy(isSearching = !flightUiState.value.isSearching)
+        }
+    }
+    // Provide a limited set of flights as initial recommendation
+    private fun getInitialSuggestions(){
         viewModelScope.launch {
             flightSearchRepository.getSuggestions()
                 .collect{ airportSuggestions ->
@@ -66,7 +62,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
                 }
         }
     }
-
+    // This function is called whenever the user updates our search query
     fun getAutoComplete(query: String){
         viewModelScope.launch {
             flightSearchRepository.getAutoComplete(query)
@@ -78,8 +74,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
                 }
         }
     }
-
-
+    // This function is called when the user trigger's the search button of SearchBar
     fun getPotentialFlights(){
         viewModelScope.launch {
             flightSearchRepository.getAllFlightSearchStream(flightUiState.value.userQuery)
@@ -92,7 +87,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
                 }
         }
     }
-
+    // This function is called when the user clicks the suggestion in our SearchBar
     fun getUserQueryAndPotentialFlights(query: String){
         _flightUiState.update { it.copy(userQuery = query, isSearching = false) }
         getPotentialFlights()
@@ -100,6 +95,10 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
     }
 
+    /**
+     * List of our database functions to Add, Delete, and Check if Something is already
+     * existing in our database
+     */
     suspend fun addToFavorite(departureCode : String, destinationCode : String){
         flightSearchRepository.addToFavorite(departureCode, destinationCode)
     }
@@ -116,6 +115,7 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
            }
     }
 
+
     companion object {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -128,15 +128,15 @@ class FlightSearchViewModel (private val flightSearchRepository: FlightSearchRep
 
     init {
         getFavorites()
-        getSuggestions()
+        getInitialSuggestions()
     }
 }
 
 data class FlightUiState(
     val userQuery: String = "",
     val isSearching: Boolean = false,
-    val suggestedAirports: List<Airport> = emptyList(),
-    val autoComplete: List<Airport> = emptyList(),
+    val suggestedAirports: List<FlightSearchAirportEntity> = emptyList(),
+    val autoComplete: List<FlightSearchAirportEntity> = emptyList(),
     val potentialFlights: List<AirportWithPotentialFlights> = emptyList(),
     val favoriteFlights: List<FavoriteWithAirportAndPotentialFlights> = emptyList(),
     val isFavorite: Boolean = false

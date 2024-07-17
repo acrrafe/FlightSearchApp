@@ -5,8 +5,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flightsearchapp.data.relations.AirportWithPotentialFlights
 import com.example.flightsearchapp.data.relations.FavoriteWithAirportAndPotentialFlights
+import com.example.flightsearchapp.data.relations.FlightSearchAirportEntity
 
-import com.example.flightsearchapp.model.Airport
+
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -52,9 +53,9 @@ interface FlightSearchDao {
 
     @Transaction
     @Query("SELECT DISTINCT * FROM airport ORDER BY passengers LIMIT 10")
-    fun getSuggestions(): Flow<List<Airport>>
+    fun getSuggestions(): Flow<List<FlightSearchAirportEntity>>
 
     @Transaction
     @Query("SELECT * FROM airport WHERE name LIKE '%' || :query || '%' OR  iata_code LIKE '%' || :query || '%'")
-    fun getAutoComplete(query: String): Flow<List<Airport>>
+    fun getAutoComplete(query: String): Flow<List<FlightSearchAirportEntity>>
 }
