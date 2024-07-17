@@ -14,7 +14,7 @@ import com.example.flightsearchapp.data.relations.PotentialFlightEntity
     FlightSearchAirportEntity::class,
     FlightSearchFavoriteEntity::class,
     PotentialFlightEntity::class
-                     ], version = 3, exportSchema = false)
+                     ], version = 2, exportSchema = false)
 abstract class FlightSearchDatabase: RoomDatabase() {
 
     abstract fun flightSearchDao(): FlightSearchDao
@@ -23,13 +23,13 @@ abstract class FlightSearchDatabase: RoomDatabase() {
         @Volatile
         private var Instance: FlightSearchDatabase? = null
 
-        val MIGRATION_2_3 = object : Migration(2, 3) {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS potential_flights")
                 database.execSQL("""
             CREATE TABLE IF NOT EXISTS potential_flights (
-                departure_code TEXT NOT NULL,
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                departure_code TEXT NOT NULL,
                 destination_code TEXT NOT NULL
             )
         """)
@@ -54,7 +54,7 @@ abstract class FlightSearchDatabase: RoomDatabase() {
                     "flight_search_database"
                 )
                     .createFromAsset("database/flight_search.db")
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                     .also { Instance = it }
             }
